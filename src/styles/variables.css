@@ -1,0 +1,13 @@
+:root {
+  --font-sans: "Aptos", "Satoshi", "Manrope", "IBM Plex Sans", sans-serif;
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --shadow-soft: 0 18px 45px rgba(31, 35, 40, 0.08);
+  --shadow-card: 0 10px 30px rgba(31, 35, 40, 0.06);
+  --transition: 180ms ease;
+  --sidebar-width: 280px;
+  --content-max-width: 1180px;
+}
+

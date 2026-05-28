@@ -4,7 +4,7 @@ import Button from '../common/Button';
 import ThemeToggle from '../common/ThemeToggle';
 
 const TITLES = {
-  '/dashboard': 'Дашборд',
+  '/dashboard': 'Dashboard',
   '/requests': 'Мои заявки',
   '/requests/create': 'Новая заявка',
   '/reviews': 'Отзывы',
@@ -32,7 +32,7 @@ const Header = ({ user, onMenuClick, onLogout }) => {
           <span />
         </button>
         <div>
-          <p className="eyebrow">Рабочая панель</p>
+          <p className="eyebrow">Workspace</p>
           <h1>{title}</h1>
         </div>
       </div>
@@ -52,4 +52,3 @@ const Header = ({ user, onMenuClick, onLogout }) => {
 };
 
 export default Header;
-

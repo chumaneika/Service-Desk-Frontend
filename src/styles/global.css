@@ -414,6 +414,15 @@ h3 {
   transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 
+.request-card--clickable {
+  cursor: pointer;
+}
+
+.request-card--clickable:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  outline-offset: 3px;
+}
+
 .request-card p,
 .review-card p {
   color: var(--color-muted);
@@ -598,6 +607,15 @@ h3 {
 
 .table tbody tr {
   transition: background var(--transition);
+}
+
+.table__clickable-row {
+  cursor: pointer;
+}
+
+.table__clickable-row:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  outline-offset: -3px;
 }
 
 .table tbody tr:hover {
@@ -1066,4 +1084,3 @@ h3 {
     padding: 20px;
   }
 }
-

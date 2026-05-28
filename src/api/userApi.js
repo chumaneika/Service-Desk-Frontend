@@ -1,6 +1,7 @@
 import axiosClient from './axiosClient';
 import { mockApi } from './mockData';
 import { withMockFallback } from './mockFallback';
+import { normalizePhoneForServer } from '../utils/phone';
 import { ROLES } from '../utils/roles';
 
 const normalizeRoleParam = (role) => {
@@ -34,12 +35,17 @@ const normalizeUsersResponse = (data) => {
 
 export const userApi = {
   async createUser(payload) {
+    const normalizedPayload = {
+      ...payload,
+      numberPhone: normalizePhoneForServer(payload?.numberPhone),
+    };
+
     return withMockFallback(
       async () => {
-        const response = await axiosClient.post('/api/users', payload);
+        const response = await axiosClient.post('/api/users', normalizedPayload);
         return response.data;
       },
-      () => mockApi.createUser(payload),
+      () => mockApi.createUser(normalizedPayload),
     );
   },
 

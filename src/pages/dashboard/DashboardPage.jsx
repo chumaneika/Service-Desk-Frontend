@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { requestApi } from '../../api/requestApi';
 import Button from '../../components/common/Button';
@@ -13,35 +13,37 @@ const DashboardPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
+  const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const loadRequests = async () => {
+    const loadDashboard = async () => {
       setIsLoading(true);
       setError('');
 
       try {
-        const data = await requestApi.getRequestsByUser(user.id);
-        setRequests(data || []);
+        const [allRequests, inProgressRequests, completedRequests] = await Promise.all([
+          requestApi.getRequestsByStatus(user.id),
+          requestApi.getRequestsByStatus(user.id, REQUEST_STATUSES.IN_PROGRESS),
+          requestApi.getRequestsByStatus(user.id, REQUEST_STATUSES.COMPLETED),
+        ]);
+
+        setRequests(allRequests || []);
+        setStats({
+          total: allRequests?.length || 0,
+          active: inProgressRequests?.length || 0,
+          completed: completedRequests?.length || 0,
+        });
       } catch (requestError) {
-        setError(getErrorMessage(requestError, 'Не удалось загрузить ваши заявки.'));
+        setError(getErrorMessage(requestError, 'Не удалось загрузить статистику заявок.'));
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadRequests();
+    loadDashboard();
   }, [user.id]);
-
-  const stats = useMemo(
-    () => ({
-      total: requests.length,
-      active: requests.filter((request) => request.status === REQUEST_STATUSES.IN_PROGRESS).length,
-      completed: requests.filter((request) => request.status === REQUEST_STATUSES.COMPLETED).length,
-    }),
-    [requests],
-  );
 
   const recentRequests = requests.slice(0, 3);
 
@@ -104,4 +106,3 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-

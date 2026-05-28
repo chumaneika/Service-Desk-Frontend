@@ -1,9 +1,11 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDate, getFullName } from '../../utils/formatters';
 import EmptyState from '../common/EmptyState';
 import StatusBadge from '../common/StatusBadge';
 
 const RequestTable = ({ requests = [], showOwner = true, showAssignee = true, emptyTitle, emptyDescription }) => {
+  const navigate = useNavigate();
+
   if (!requests.length) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
@@ -24,7 +26,18 @@ const RequestTable = ({ requests = [], showOwner = true, showAssignee = true, em
         </thead>
         <tbody>
           {requests.map((request) => (
-            <tr key={request.id}>
+            <tr
+              key={request.id}
+              className="table__clickable-row"
+              onClick={() => navigate(`/requests/${request.id}`)}
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  navigate(`/requests/${request.id}`);
+                }
+              }}
+            >
               <td>#{request.id}</td>
               <td>
                 <strong>{request.title}</strong>
@@ -37,7 +50,7 @@ const RequestTable = ({ requests = [], showOwner = true, showAssignee = true, em
               {showAssignee && <td>{getFullName(request.assignedTo)}</td>}
               <td>{formatDate(request.updatedAt || request.createdAt)}</td>
               <td>
-                <Link className="text-link" to={`/requests/${request.id}`}>
+                <Link className="text-link" to={`/requests/${request.id}`} onClick={(event) => event.stopPropagation()}>
                   Детали
                 </Link>
               </td>
@@ -50,4 +63,3 @@ const RequestTable = ({ requests = [], showOwner = true, showAssignee = true, em
 };
 
 export default RequestTable;
-

@@ -2,6 +2,7 @@ import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 import { authApi } from '../api/authApi';
 import { userApi } from '../api/userApi';
 import { BOOTSTRAP_SUPER_ADMIN_PHONE } from '../utils/constants';
+import { normalizePhoneForServer } from '../utils/phone';
 import { ROLES } from '../utils/roles';
 import { tokenStorage } from '../utils/tokenStorage';
 
@@ -63,13 +64,13 @@ const getRoleFromPayload = (payload) => {
     .find(Boolean);
 };
 
-const normalizePhone = (phone) => String(phone || '').replace(/[^\d]/g, '');
+const getPhoneDigits = (phone) => String(phone || '').replace(/[^\d]/g, '');
 
 const normalizeAuthUser = (authResponse, preferredRole, fallbackNumberPhone) => {
   const payload = decodeJwtPayload(authResponse.accessToken);
   const numberPhone = authResponse.numberPhone || payload.numberPhone || payload.phone || fallbackNumberPhone || '';
   const isBootstrapSuperAdmin =
-    BOOTSTRAP_SUPER_ADMIN_PHONE && normalizePhone(numberPhone) === normalizePhone(BOOTSTRAP_SUPER_ADMIN_PHONE);
+    BOOTSTRAP_SUPER_ADMIN_PHONE && getPhoneDigits(numberPhone) === getPhoneDigits(BOOTSTRAP_SUPER_ADMIN_PHONE);
   const role =
     normalizeRole(authResponse.role) ||
     normalizeRole(authResponse.user?.role) ||
@@ -111,10 +112,11 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(
     async ({ numberPhone, password, preferredRole }) => {
       setIsLoading(true);
+      const normalizedNumberPhone = normalizePhoneForServer(numberPhone);
 
       try {
-        const authResponse = await authApi.login({ numberPhone, password, preferredRole });
-        return persistSession(authResponse, preferredRole, numberPhone);
+        const authResponse = await authApi.login({ numberPhone: normalizedNumberPhone, password, preferredRole });
+        return persistSession(authResponse, preferredRole, normalizedNumberPhone);
       } finally {
         setIsLoading(false);
       }

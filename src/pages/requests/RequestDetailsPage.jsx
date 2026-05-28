@@ -76,26 +76,6 @@ const RequestDetailsPage = () => {
     }
   };
 
-  const handleFeedback = async () => {
-    setIsSubmitting(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      const updatedRequest = await requestApi.leaveFeedback(requestId, feedback);
-      setRequest((currentRequest) => ({
-        ...currentRequest,
-        ...(updatedRequest || {}),
-        feedback,
-      }));
-      setSuccess('Feedback сохранен.');
-    } catch (requestError) {
-      setError(getErrorMessage(requestError, 'Не удалось оставить feedback.'));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleReviewSubmit = async (event) => {
     event.preventDefault();
     setError('');
@@ -109,14 +89,20 @@ const RequestDetailsPage = () => {
     setIsSubmitting(true);
 
     try {
+      const updatedRequest = await requestApi.leaveFeedback(requestId, feedback);
       await reviewApi.createReview({
         ...reviewForm,
         requestId: Number(requestId),
       });
+      setRequest((currentRequest) => ({
+        ...currentRequest,
+        ...(updatedRequest || {}),
+        feedback,
+      }));
       setReviewForm({ title: '', description: '' });
-      setSuccess('Review создан.');
+      setSuccess('Отзыв сохранен.');
     } catch (requestError) {
-      setError(getErrorMessage(requestError, 'Не удалось создать review.'));
+      setError(getErrorMessage(requestError, 'Не удалось оставить отзыв.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -129,6 +115,8 @@ const RequestDetailsPage = () => {
   if (!request) {
     return <EmptyState title="Заявка не найдена" description="Проверьте ID или попробуйте открыть список заявок." />;
   }
+
+  const requestAuthor = request.createdBy || (user.role === ROLES.USER ? user : null);
 
   return (
     <section className="page-section">
@@ -155,7 +143,7 @@ const RequestDetailsPage = () => {
             </div>
             <div>
               <dt>Автор</dt>
-              <dd>{getFullName(request.createdBy)}</dd>
+              <dd>{getFullName(requestAuthor)}</dd>
             </div>
             <div>
               <dt>Исполнитель</dt>
@@ -185,43 +173,34 @@ const RequestDetailsPage = () => {
           )}
 
           {user.role === ROLES.USER && (
-            <>
-              <div className="panel-card">
-                <h3>Оставить feedback</h3>
-                <Select
-                  label="Оценка"
-                  name="feedback"
-                  value={feedback}
-                  onChange={(event) => setFeedback(event.target.value)}
-                  options={feedbackOptions}
-                />
-                <Button fullWidth isLoading={isSubmitting} onClick={handleFeedback}>
-                  Отправить feedback
-                </Button>
-              </div>
-
-              <form className="panel-card" onSubmit={handleReviewSubmit}>
-                <h3>Создать review</h3>
-                <Input
-                  label="Заголовок"
-                  name="reviewTitle"
-                  value={reviewForm.title}
-                  onChange={(event) => setReviewForm((form) => ({ ...form, title: event.target.value }))}
-                  placeholder="Короткий итог"
-                />
-                <Textarea
-                  label="Описание"
-                  name="reviewDescription"
-                  value={reviewForm.description}
-                  onChange={(event) => setReviewForm((form) => ({ ...form, description: event.target.value }))}
-                  placeholder="Расскажите, как прошло решение"
-                  rows={4}
-                />
-                <Button type="submit" fullWidth isLoading={isSubmitting}>
-                  Создать review
-                </Button>
-              </form>
-            </>
+            <form className="panel-card" onSubmit={handleReviewSubmit}>
+              <h3>Оставить отзыв</h3>
+              <Select
+                label="Оценка"
+                name="feedback"
+                value={feedback}
+                onChange={(event) => setFeedback(event.target.value)}
+                options={feedbackOptions}
+              />
+              <Input
+                label="Заголовок"
+                name="reviewTitle"
+                value={reviewForm.title}
+                onChange={(event) => setReviewForm((form) => ({ ...form, title: event.target.value }))}
+                placeholder="Короткий итог"
+              />
+              <Textarea
+                label="Описание"
+                name="reviewDescription"
+                value={reviewForm.description}
+                onChange={(event) => setReviewForm((form) => ({ ...form, description: event.target.value }))}
+                placeholder="Расскажите, как прошло решение"
+                rows={4}
+              />
+              <Button type="submit" fullWidth isLoading={isSubmitting}>
+                Отправить отзыв
+              </Button>
+            </form>
           )}
         </aside>
       </div>

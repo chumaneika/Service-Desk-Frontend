@@ -7,12 +7,18 @@ const getCurrentUserId = () => tokenStorage.getUser()?.id;
 
 export const requestApi = {
   async createRequest(payload) {
+    const createdById = getCurrentUserId();
+    const requestPayload = {
+      ...payload,
+      createdById,
+    };
+
     return withMockFallback(
       async () => {
-        const response = await axiosClient.post('/api/requests', payload);
+        const response = await axiosClient.post('/api/requests', requestPayload);
         return response.data;
       },
-      () => mockApi.createRequest(payload, getCurrentUserId()),
+      () => mockApi.createRequest(requestPayload, createdById),
     );
   },
 
@@ -23,6 +29,21 @@ export const requestApi = {
         return response.data;
       },
       () => mockApi.getRequestsByUser(userId),
+    );
+  },
+
+  async getRequestsByStatus(userId, status = null) {
+    return withMockFallback(
+      async () => {
+        const response = await axiosClient.get(`/api/requests/by-status/${userId}`, {
+          params: status ? { status } : {},
+        });
+        return response.data;
+      },
+      () => {
+        const requests = mockApi.getRequestsByUser(userId);
+        return status ? requests.filter((request) => request.status === status) : requests;
+      },
     );
   },
 
@@ -90,4 +111,3 @@ export const requestApi = {
     );
   },
 };
-

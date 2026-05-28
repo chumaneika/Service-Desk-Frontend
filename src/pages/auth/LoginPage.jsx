@@ -47,11 +47,11 @@ const LoginPage = () => {
       navigate(redirectPath, { replace: true });
     } catch (requestError) {
       if (requestError?.response?.status === 401) {
-        setError('Backend отклонил вход: проверьте номер телефона, пароль и что пользователь включен в БД.');
+        setError('Неверный телефон или пароль.');
         return;
       }
 
-      setError(getErrorMessage(requestError, 'Не удалось войти. Проверьте данные и backend.'));
+      setError(getErrorMessage(requestError, 'Не удалось войти. Попробуйте еще раз.'));
     }
   };
 
@@ -67,11 +67,6 @@ const LoginPage = () => {
           JWT хранится локально, access token автоматически подставляется в запросы, а refresh срабатывает
           без участия пользователя.
         </p>
-        <div className="auth-page__cards">
-          <div>USER: создает и отслеживает заявки</div>
-          <div>ADMIN: берет задачи в работу</div>
-          <div>SUPER ADMIN: управляет пользователями</div>
-        </div>
       </section>
 
       <section className="auth-card">

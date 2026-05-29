@@ -89,19 +89,23 @@ const RequestDetailsPage = () => {
     setIsSubmitting(true);
 
     try {
-      const updatedRequest = await requestApi.leaveFeedback(requestId, feedback);
       await reviewApi.createReview({
         ...reviewForm,
-        requestId: Number(requestId),
-      });
+        owner: user.id,
+        request: Number(requestId),
+      }, feedback);
       setRequest((currentRequest) => ({
         ...currentRequest,
-        ...(updatedRequest || {}),
-        feedback,
+        reviewOwner: feedback,
       }));
       setReviewForm({ title: '', description: '' });
       setSuccess('Отзыв сохранен.');
     } catch (requestError) {
+      if (requestError?.response?.data?.message === 'Review for this request already exists') {
+        setError('Отзыв по этой заявке уже оставлен.');
+        return;
+      }
+
       setError(getErrorMessage(requestError, 'Не удалось оставить отзыв.'));
     } finally {
       setIsSubmitting(false);

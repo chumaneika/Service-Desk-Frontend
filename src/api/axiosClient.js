@@ -9,6 +9,11 @@ const axiosClient = axios.create({
   },
 });
 
+const normalizeAuthTokens = (data) => ({
+  accessToken: data?.accessToken || data?.access_token || data?.token || data?.jwt,
+  refreshToken: data?.refreshToken || data?.refresh_token,
+});
+
 let isRefreshing = false;
 let refreshSubscribers = [];
 
@@ -82,7 +87,12 @@ axiosClient.interceptors.response.use(
         },
       );
 
-      const { accessToken, refreshToken: newRefreshToken } = response.data;
+      const { accessToken, refreshToken: newRefreshToken } = normalizeAuthTokens(response.data);
+
+      if (!accessToken) {
+        throw new Error('Backend не вернул access token после refresh.');
+      }
+
       tokenStorage.setTokens({
         accessToken,
         refreshToken: newRefreshToken || refreshToken,
@@ -102,4 +112,3 @@ axiosClient.interceptors.response.use(
 );
 
 export default axiosClient;
-

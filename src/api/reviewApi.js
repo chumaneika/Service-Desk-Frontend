@@ -6,10 +6,10 @@ import { tokenStorage } from '../utils/tokenStorage';
 const getCurrentUserId = () => tokenStorage.getUser()?.id;
 
 export const reviewApi = {
-  async createReview(payload) {
+  async createReview(payload, reviewOwner) {
     return withMockFallback(
       async () => {
-        const response = await axiosClient.post('/api/reviews', payload);
+        const response = await axiosClient.post(`/api/reviews/${reviewOwner}`, payload);
         return response.data;
       },
       () => mockApi.createReview(payload, getCurrentUserId()),
@@ -36,4 +36,3 @@ export const reviewApi = {
     );
   },
 };
-

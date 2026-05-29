@@ -226,7 +226,7 @@ export const mockApi = {
         id: currentUserId,
         preferredRole: ROLES.USER,
       });
-    const request = mockRequests.find((item) => item.id === Number(payload.requestId));
+    const request = mockRequests.find((item) => item.id === Number(payload.request || payload.requestId));
     const review = {
       id: getNextId(mockReviews),
       title: payload.title,

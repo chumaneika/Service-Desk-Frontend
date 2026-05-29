@@ -48,9 +48,11 @@ const AdminUserRequestsPage = () => {
         <Input
           label="User ID"
           name="userId"
-          type="number"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={userId}
-          onChange={(event) => setUserId(event.target.value)}
+          onChange={(event) => setUserId(event.target.value.replace(/\D/g, ''))}
           placeholder="Например: 1"
         />
         <Button type="submit" isLoading={isLoading}>
@@ -69,4 +71,3 @@ const AdminUserRequestsPage = () => {
 };
 
 export default AdminUserRequestsPage;
-

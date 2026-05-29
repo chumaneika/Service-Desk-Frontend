@@ -62,10 +62,43 @@ export const userApi = {
   async findUserById(userId) {
     return withMockFallback(
       async () => {
-        const response = await axiosClient.get(`/api/users/${userId}`);
+        const response = await axiosClient.get(`/api/users/id/${userId}`);
         return response.data;
       },
       () => mockApi.findUserById(userId),
+    );
+  },
+
+  async findUserByPhone(numberPhone) {
+    const normalizedNumberPhone = normalizePhoneForServer(numberPhone);
+
+    return withMockFallback(
+      async () => {
+        const response = await axiosClient.get(`/api/users/numberPhone/${encodeURIComponent(normalizedNumberPhone)}`);
+        return response.data;
+      },
+      () => mockApi.findAllUsers().find((user) => user.numberPhone === normalizedNumberPhone) || null,
+    );
+  },
+
+  async searchUsers(search) {
+    const normalizedSearch = String(search || '').trim();
+
+    return withMockFallback(
+      async () => {
+        const response = await axiosClient.get('/api/users/search', {
+          params: {
+            search: normalizedSearch,
+          },
+        });
+        return normalizeUsersResponse(response.data);
+      },
+      () => {
+        const query = normalizedSearch.toLowerCase();
+        return mockApi
+          .findAllUsers()
+          .filter((user) => [user.name, user.surname].some((value) => value?.toLowerCase().includes(query)));
+      },
     );
   },
 

@@ -591,6 +591,25 @@ h3 {
   padding: 14px;
 }
 
+.meta-grid .meta-grid__item--action {
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    transform 180ms ease;
+}
+
+.meta-grid .meta-grid__item--action:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  transform: translateY(-1px);
+}
+
+.meta-grid .meta-grid__item--action:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+  outline-offset: 3px;
+}
+
 .meta-grid dt {
   color: var(--color-subtle);
   font-size: 0.74rem;

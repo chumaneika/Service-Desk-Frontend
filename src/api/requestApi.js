@@ -5,6 +5,19 @@ import { tokenStorage } from '../utils/tokenStorage';
 
 const getCurrentUserId = () => tokenStorage.getUser()?.id;
 
+const normalizeRequest = (request) => {
+  if (!request) {
+    return request;
+  }
+
+  return {
+    ...request,
+    assignedTo: request.assignedTo || request.responsible || null,
+  };
+};
+
+const normalizeRequests = (requests) => (Array.isArray(requests) ? requests.map(normalizeRequest) : requests);
+
 export const requestApi = {
   async createRequest(payload) {
     const createdById = getCurrentUserId();
@@ -16,7 +29,7 @@ export const requestApi = {
     return withMockFallback(
       async () => {
         const response = await axiosClient.post('/api/requests', requestPayload);
-        return response.data;
+        return normalizeRequest(response.data);
       },
       () => mockApi.createRequest(requestPayload, createdById),
     );
@@ -26,7 +39,7 @@ export const requestApi = {
     return withMockFallback(
       async () => {
         const response = await axiosClient.get(`/api/requests/by-user/${userId}`);
-        return response.data;
+        return normalizeRequests(response.data);
       },
       () => mockApi.getRequestsByUser(userId),
     );
@@ -38,7 +51,7 @@ export const requestApi = {
         const response = await axiosClient.get(`/api/requests/by-status/${userId}`, {
           params: status ? { status } : {},
         });
-        return response.data;
+        return normalizeRequests(response.data);
       },
       () => {
         const requests = mockApi.getRequestsByUser(userId);
@@ -51,7 +64,7 @@ export const requestApi = {
     return withMockFallback(
       async () => {
         const response = await axiosClient.get(`/api/requests/by-responsible/${userId}`);
-        return response.data;
+        return normalizeRequests(response.data);
       },
       () => mockApi.getRequestsByResponsible(userId),
     );
@@ -61,7 +74,7 @@ export const requestApi = {
     return withMockFallback(
       async () => {
         const response = await axiosClient.get('/api/requests/created');
-        return response.data;
+        return normalizeRequests(response.data);
       },
       () => mockApi.getCreatedRequests(),
     );
@@ -71,7 +84,7 @@ export const requestApi = {
     return withMockFallback(
       async () => {
         const response = await axiosClient.get('/api/requests');
-        return response.data;
+        return normalizeRequests(response.data);
       },
       () => mockApi.getAllRequests(),
     );
@@ -83,9 +96,19 @@ export const requestApi = {
         const response = await axiosClient.patch(`/api/requests/${requestId}/status`, null, {
           params: { status },
         });
-        return response.data;
+        return normalizeRequest(response.data);
       },
       () => mockApi.changeStatus(requestId, status),
+    );
+  },
+
+  async assignResponsible(requestId, userId) {
+    return withMockFallback(
+      async () => {
+        const response = await axiosClient.patch(`/api/requests/${requestId}/responsible/${userId}`);
+        return normalizeRequest(response.data);
+      },
+      () => mockApi.assignResponsible(requestId, userId),
     );
   },
 
@@ -95,7 +118,7 @@ export const requestApi = {
         const response = await axiosClient.patch(`/api/requests/${requestId}/feedback`, null, {
           params: { feedback },
         });
-        return response.data;
+        return normalizeRequest(response.data);
       },
       () => mockApi.leaveFeedback(requestId, feedback),
     );
@@ -105,7 +128,7 @@ export const requestApi = {
     return withMockFallback(
       async () => {
         const response = await axiosClient.get(`/api/requests/${requestId}`);
-        return response.data;
+        return normalizeRequest(response.data);
       },
       () => mockApi.getRequestById(requestId),
     );

@@ -6,10 +6,10 @@ export const REQUEST_STATUSES = {
 };
 
 export const STATUS_LABELS = {
-  [REQUEST_STATUSES.CREATED]: 'Новая',
-  [REQUEST_STATUSES.IN_PROGRESS]: 'В работе',
-  [REQUEST_STATUSES.COMPLETED]: 'Завершена',
-  [REQUEST_STATUSES.FAILED]: 'Не выполнена',
+  [REQUEST_STATUSES.CREATED]: 'Новый запрос',
+  [REQUEST_STATUSES.IN_PROGRESS]: 'В процессе выполнения',
+  [REQUEST_STATUSES.COMPLETED]: 'Выполнен',
+  [REQUEST_STATUSES.FAILED]: 'Запрос не выполнен',
 };
 
 export const STATUS_TONES = {
@@ -28,4 +28,3 @@ export const FEEDBACK_LABELS = {
   GOOD: 'Хорошо',
   BAD: 'Плохо',
 };
-

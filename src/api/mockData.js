@@ -205,6 +205,26 @@ export const mockApi = {
     return request;
   },
 
+  async assignResponsible(requestId, userId) {
+    await wait();
+    const request = mockRequests.find((item) => item.id === Number(requestId));
+    const responsible =
+      mockUsers.find((user) => user.id === Number(userId)) ||
+      ensureMockUser({
+        id: userId,
+        preferredRole: ROLES.ADMIN,
+      });
+
+    if (!request) {
+      return null;
+    }
+
+    request.assignedTo = responsible;
+    request.responsible = responsible;
+    request.updatedAt = new Date().toISOString();
+    return request;
+  },
+
   async leaveFeedback(requestId, feedback) {
     await wait();
     const request = mockRequests.find((item) => item.id === Number(requestId));

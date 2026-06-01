@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import EmptyState from '../../components/common/EmptyState';
 import Input from '../../components/common/Input';
 import Loader from '../../components/common/Loader';
+import Modal from '../../components/common/Modal';
 import Select from '../../components/common/Select';
 import StatusBadge from '../../components/common/StatusBadge';
 import Textarea from '../../components/common/Textarea';
@@ -34,6 +35,9 @@ const RequestDetailsPage = () => {
   const [reviewForm, setReviewForm] = useState({ title: '', description: '' });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -56,6 +60,18 @@ const RequestDetailsPage = () => {
     loadRequest();
   }, [requestId]);
 
+  const openStatusModal = () => {
+    setError('');
+    setSuccess('');
+
+    if (status === request.status) {
+      setError('Выберите новый статус заявки.');
+      return;
+    }
+
+    setIsStatusModalOpen(true);
+  };
+
   const handleStatusChange = async () => {
     setIsSubmitting(true);
     setError('');
@@ -69,10 +85,51 @@ const RequestDetailsPage = () => {
         status,
       }));
       setSuccess('Статус заявки обновлен.');
+      setIsStatusModalOpen(false);
     } catch (requestError) {
       setError(getErrorMessage(requestError, 'Не удалось изменить статус.'));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const openAssignModal = () => {
+    setError('');
+    setSuccess('');
+    setIsAssignModalOpen(true);
+  };
+
+  const handleAssigneeKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openAssignModal();
+    }
+  };
+
+  const handleAssignResponsible = async () => {
+    if (!user?.id) {
+      setError('Не удалось определить текущего пользователя.');
+      setIsAssignModalOpen(false);
+      return;
+    }
+
+    setIsAssigning(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const updatedRequest = await requestApi.assignResponsible(requestId, user.id);
+      setRequest((currentRequest) => ({
+        ...currentRequest,
+        ...(updatedRequest || {}),
+        assignedTo: updatedRequest?.assignedTo || updatedRequest?.responsible || user,
+      }));
+      setSuccess('Заявка назначена на вас.');
+      setIsAssignModalOpen(false);
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, 'Не удалось назначить исполнителя.'));
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -121,6 +178,10 @@ const RequestDetailsPage = () => {
   }
 
   const requestAuthor = request.createdBy || (user.role === ROLES.USER ? user : null);
+  const assignedUser = request.assignedTo || request.responsible;
+  const canAssignResponsible = user.role === ROLES.ADMIN && !assignedUser;
+  const selectedStatusLabel = STATUS_LABELS[status] || status;
+  const currentStatusLabel = STATUS_LABELS[request.status] || request.status;
 
   return (
     <section className="page-section">
@@ -149,9 +210,16 @@ const RequestDetailsPage = () => {
               <dt>Автор</dt>
               <dd>{getFullName(requestAuthor)}</dd>
             </div>
-            <div>
+            <div
+              className={canAssignResponsible ? 'meta-grid__item--action' : ''}
+              role={canAssignResponsible ? 'button' : undefined}
+              tabIndex={canAssignResponsible ? 0 : undefined}
+              aria-label={canAssignResponsible ? 'Взять заявку в работу' : undefined}
+              onClick={canAssignResponsible ? openAssignModal : undefined}
+              onKeyDown={canAssignResponsible ? handleAssigneeKeyDown : undefined}
+            >
               <dt>Исполнитель</dt>
-              <dd>{getFullName(request.assignedTo)}</dd>
+              <dd>{getFullName(assignedUser)}</dd>
             </div>
           </dl>
         </article>
@@ -170,7 +238,7 @@ const RequestDetailsPage = () => {
                 onChange={(event) => setStatus(event.target.value)}
                 options={statusOptions}
               />
-              <Button fullWidth isLoading={isSubmitting} onClick={handleStatusChange}>
+              <Button fullWidth onClick={openStatusModal}>
                 Сохранить статус
               </Button>
             </div>
@@ -208,6 +276,44 @@ const RequestDetailsPage = () => {
           )}
         </aside>
       </div>
+
+      <Modal
+        isOpen={isAssignModalOpen}
+        title="Взять заявку"
+        onClose={() => setIsAssignModalOpen(false)}
+        footer={(
+          <>
+            <Button variant="ghost" onClick={() => setIsAssignModalOpen(false)} disabled={isAssigning}>
+              Отмена
+            </Button>
+            <Button onClick={handleAssignResponsible} isLoading={isAssigning}>
+              Взять заявку
+            </Button>
+          </>
+        )}
+      >
+        <p>Назначить вас исполнителем этой заявки?</p>
+      </Modal>
+
+      <Modal
+        isOpen={isStatusModalOpen}
+        title="Изменить статус"
+        onClose={() => setIsStatusModalOpen(false)}
+        footer={(
+          <>
+            <Button variant="ghost" onClick={() => setIsStatusModalOpen(false)} disabled={isSubmitting}>
+              Отмена
+            </Button>
+            <Button onClick={handleStatusChange} isLoading={isSubmitting}>
+              Изменить статус
+            </Button>
+          </>
+        )}
+      >
+        <p>
+          Изменить статус заявки с «{currentStatusLabel}» на «{selectedStatusLabel}»?
+        </p>
+      </Modal>
     </section>
   );
 };

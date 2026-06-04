@@ -118,16 +118,29 @@ const RequestDetailsPage = () => {
     setSuccess('');
 
     try {
-      const updatedRequest = await requestApi.assignResponsible(requestId, user.id);
+      const assignedRequest = await requestApi.assignResponsible(requestId, user.id);
+      const updatedRequest =
+        assignedRequest?.status === REQUEST_STATUSES.IN_PROGRESS
+          ? assignedRequest
+          : await requestApi.changeStatus(requestId, REQUEST_STATUSES.IN_PROGRESS);
+
       setRequest((currentRequest) => ({
         ...currentRequest,
+        ...(assignedRequest || {}),
         ...(updatedRequest || {}),
-        assignedTo: updatedRequest?.assignedTo || updatedRequest?.responsible || user,
+        assignedTo:
+          updatedRequest?.assignedTo ||
+          updatedRequest?.responsible ||
+          assignedRequest?.assignedTo ||
+          assignedRequest?.responsible ||
+          user,
+        status: updatedRequest?.status || REQUEST_STATUSES.IN_PROGRESS,
       }));
-      setSuccess('Заявка назначена на вас.');
+      setStatus(REQUEST_STATUSES.IN_PROGRESS);
+      setSuccess('Заявка назначена на вас и переведена в работу.');
       setIsAssignModalOpen(false);
     } catch (requestError) {
-      setError(getErrorMessage(requestError, 'Не удалось назначить исполнителя.'));
+      setError(getErrorMessage(requestError, 'Не удалось взять заявку в работу.'));
     } finally {
       setIsAssigning(false);
     }

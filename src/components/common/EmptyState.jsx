@@ -1,12 +1,12 @@
 import Button from './Button';
 
-const EmptyState = ({ title = 'Пока пусто', description, actionLabel, onAction }) => (
+const EmptyState = ({ title = 'Пока пусто', description, actionLabel, actionTo, onAction }) => (
   <div className="empty-state">
     <div className="empty-state__mark" aria-hidden="true" />
     <h3>{title}</h3>
     {description && <p>{description}</p>}
-    {actionLabel && onAction && (
-      <Button variant="secondary" onClick={onAction}>
+    {actionLabel && (actionTo || onAction) && (
+      <Button variant="secondary" to={actionTo} onClick={onAction}>
         {actionLabel}
       </Button>
     )}
@@ -14,4 +14,3 @@ const EmptyState = ({ title = 'Пока пусто', description, actionLabel, o
 );
 
 export default EmptyState;
-

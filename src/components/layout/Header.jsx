@@ -18,11 +18,24 @@ const TITLES = {
   '/super-admin/users': 'Пользователи',
   '/super-admin/users/create': 'Создать пользователя',
   '/super-admin/users/search': 'Поиск пользователя',
+  '/super-admin/reviews': 'Отзывы',
+};
+
+const getHeaderTitle = (pathname) => {
+  if (TITLES[pathname]) {
+    return TITLES[pathname];
+  }
+
+  if (pathname.startsWith('/super-admin/users/')) {
+    return 'Пользователь';
+  }
+
+  return 'Service Desk';
 };
 
 const Header = ({ user, onMenuClick, onLogout }) => {
   const location = useLocation();
-  const title = TITLES[location.pathname] || 'Service Desk';
+  const title = getHeaderTitle(location.pathname);
 
   return (
     <header className="header">

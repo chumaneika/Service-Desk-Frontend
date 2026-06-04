@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { requestApi } from '../../api/requestApi';
 import Button from '../../components/common/Button';
 import EmptyState from '../../components/common/EmptyState';
@@ -11,7 +10,6 @@ import { REQUEST_STATUSES } from '../../utils/statuses';
 
 const DashboardPage = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState({ total: 0, active: 0, completed: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +53,7 @@ const DashboardPage = () => {
           <h2>Создавайте заявки и отслеживайте движение без лишнего шума.</h2>
           <p>Ваша панель показывает активные обращения, быстрый доступ к созданию и последние обновления.</p>
         </div>
-        <Button onClick={() => navigate('/requests/create')}>Создать заявку</Button>
+        <Button to="/requests/create">Создать заявку</Button>
       </div>
 
       {error && <div className="alert alert--error">{error}</div>}
@@ -80,7 +78,7 @@ const DashboardPage = () => {
           <p className="eyebrow">Последние заявки</p>
           <h2>Недавняя активность</h2>
         </div>
-        <Button variant="secondary" onClick={() => navigate('/requests')}>
+        <Button variant="secondary" to="/requests">
           Все заявки
         </Button>
       </div>
@@ -98,7 +96,7 @@ const DashboardPage = () => {
           title="Заявок пока нет"
           description="Создайте первую заявку, чтобы команда поддержки увидела задачу."
           actionLabel="Создать заявку"
-          onAction={() => navigate('/requests/create')}
+          actionTo="/requests/create"
         />
       )}
     </section>

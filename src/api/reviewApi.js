@@ -26,6 +26,18 @@ export const reviewApi = {
     );
   },
 
+  async findReviewById(reviewId) {
+    return withMockFallback(
+      async () => {
+        const response = await axiosClient.get(`/api/reviews/${reviewId}`, {
+          params: { reviewId },
+        });
+        return response.data;
+      },
+      () => mockApi.findReviewById(reviewId),
+    );
+  },
+
   async getReviewsByOwner(ownerId) {
     return withMockFallback(
       async () => {

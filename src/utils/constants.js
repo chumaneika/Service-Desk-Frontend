@@ -24,6 +24,7 @@ export const SUPER_ADMIN_NAVIGATION = [
   { label: 'Пользователи', to: '/super-admin/users' },
   { label: 'Создать пользователя', to: '/super-admin/users/create' },
   { label: 'Поиск пользователя', to: '/super-admin/users/search' },
+  { label: 'Отзывы', to: '/super-admin/reviews' },
   { label: 'Профиль', to: '/profile' },
 ];
 

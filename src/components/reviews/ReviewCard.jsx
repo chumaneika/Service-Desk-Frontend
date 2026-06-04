@@ -1,7 +1,18 @@
 import { getFullName } from '../../utils/formatters';
 
-const ReviewCard = ({ review }) => (
-  <article className="review-card">
+const ReviewCard = ({ review, onClick }) => (
+  <article
+    className={`review-card ${onClick ? 'review-card--clickable' : ''}`}
+    onClick={onClick}
+    onKeyDown={(event) => {
+      if (onClick && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        onClick();
+      }
+    }}
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+  >
     <div>
       <p className="eyebrow">Отзыв #{review.id}</p>
       <h3>{review.title}</h3>
@@ -15,4 +26,3 @@ const ReviewCard = ({ review }) => (
 );
 
 export default ReviewCard;
-

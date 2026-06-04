@@ -221,6 +221,7 @@ export const mockApi = {
 
     request.assignedTo = responsible;
     request.responsible = responsible;
+    request.status = REQUEST_STATUSES.IN_PROGRESS;
     request.updatedAt = new Date().toISOString();
     return request;
   },
@@ -261,6 +262,11 @@ export const mockApi = {
   async getAllReviews() {
     await wait();
     return mockReviews;
+  },
+
+  async findReviewById(reviewId) {
+    await wait();
+    return mockReviews.find((review) => review.id === Number(reviewId)) || null;
   },
 
   async getReviewsByOwner(ownerId) {

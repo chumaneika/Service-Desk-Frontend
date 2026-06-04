@@ -347,6 +347,7 @@ h3 {
   border-radius: 999px;
   background: radial-gradient(circle, var(--color-primary-soft), transparent 68%);
   content: "";
+  pointer-events: none;
 }
 
 .hero-card p {
@@ -385,7 +386,12 @@ h3 {
   display: grid;
   gap: 6px;
   padding: 20px;
+  text-align: left;
   transition: transform var(--transition), border-color var(--transition), background var(--transition);
+}
+
+.stat-card--button {
+  color: inherit;
 }
 
 .stat-card span {
@@ -414,11 +420,13 @@ h3 {
   transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 
-.request-card--clickable {
+.request-card--clickable,
+.review-card--clickable {
   cursor: pointer;
 }
 
-.request-card--clickable:focus-visible {
+.request-card--clickable:focus-visible,
+.review-card--clickable:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
   outline-offset: 3px;
 }
@@ -697,7 +705,8 @@ h3 {
   transform: translateY(-1px);
 }
 
-.button:disabled {
+.button:disabled,
+.button[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.62;
 }

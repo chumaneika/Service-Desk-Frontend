@@ -15,6 +15,7 @@ import ReviewsPage from '../pages/reviews/ReviewsPage';
 import CreateUserPage from '../pages/super-admin/CreateUserPage';
 import SearchUserPage from '../pages/super-admin/SearchUserPage';
 import SuperAdminDashboardPage from '../pages/super-admin/SuperAdminDashboardPage';
+import UserDetailsPage from '../pages/super-admin/UserDetailsPage';
 import UserManagementPage from '../pages/super-admin/UserManagementPage';
 import ProfilePage from '../pages/profile/ProfilePage';
 import DashboardRedirect from './DashboardRedirect';
@@ -53,8 +54,10 @@ const AppRouter = () => (
         <Route element={<RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]} />}>
           <Route path="/super-admin/dashboard" element={<SuperAdminDashboardPage />} />
           <Route path="/super-admin/users" element={<UserManagementPage />} />
+          <Route path="/super-admin/users/:userId" element={<UserDetailsPage />} />
           <Route path="/super-admin/users/create" element={<CreateUserPage />} />
           <Route path="/super-admin/users/search" element={<SearchUserPage />} />
+          <Route path="/super-admin/reviews" element={<ReviewsPage />} />
         </Route>
       </Route>
     </Route>
@@ -64,4 +67,3 @@ const AppRouter = () => (
 );
 
 export default AppRouter;
-

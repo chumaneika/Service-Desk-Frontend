@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { requestApi } from '../../api/requestApi';
 import { userApi } from '../../api/userApi';
 import Loader from '../../components/common/Loader';
@@ -7,6 +8,7 @@ import { getErrorMessage } from '../../utils/errors';
 import { ROLE_LABELS, ROLES } from '../../utils/roles';
 
 const SuperAdminDashboardPage = () => {
+  const requestsSectionRef = useRef(null);
   const [usersByRole, setUsersByRole] = useState({
     [ROLES.USER]: [],
     [ROLES.ADMIN]: [],
@@ -49,12 +51,19 @@ const SuperAdminDashboardPage = () => {
 
   const stats = useMemo(
     () => [
-      { label: ROLE_LABELS[ROLES.USER], value: usersByRole[ROLES.USER].length },
-      { label: ROLE_LABELS[ROLES.ADMIN], value: usersByRole[ROLES.ADMIN].length },
-      { label: 'Все заявки', value: requests.length },
+      { label: ROLE_LABELS[ROLES.USER], value: usersByRole[ROLES.USER].length, to: `/super-admin/users?role=${ROLES.USER}` },
+      { label: ROLE_LABELS[ROLES.ADMIN], value: usersByRole[ROLES.ADMIN].length, to: `/super-admin/users?role=${ROLES.ADMIN}` },
+      { label: 'Все заявки', value: requests.length, target: 'requests' },
     ],
     [requests.length, usersByRole],
   );
+
+  const scrollToRequests = () => {
+    requestsSectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
 
   return (
     <section className="page-section">
@@ -73,15 +82,27 @@ const SuperAdminDashboardPage = () => {
       ) : (
         <>
           <div className="stats-grid">
-            {stats.map((stat) => (
-              <div key={stat.label} className="stat-card">
-                <span>{stat.label}</span>
-                <strong>{stat.value}</strong>
-              </div>
-            ))}
+            {stats.map((stat) =>
+              stat.to ? (
+                <Link key={stat.label} className="stat-card stat-card--link" to={stat.to}>
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </Link>
+              ) : (
+                <button
+                  key={stat.label}
+                  className="stat-card stat-card--link stat-card--button"
+                  type="button"
+                  onClick={scrollToRequests}
+                >
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </button>
+              ),
+            )}
           </div>
 
-          <div className="section-heading">
+          <div className="section-heading" ref={requestsSectionRef}>
             <div>
               <p className="eyebrow">Requests</p>
               <h2>Все заявки</h2>

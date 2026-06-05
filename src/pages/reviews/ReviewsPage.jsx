@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/Button';
+import { requestApi } from '../../api/requestApi';
 import { reviewApi } from '../../api/reviewApi';
+import { userApi } from '../../api/userApi';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import SearchBar from '../../components/common/SearchBar';
@@ -10,8 +13,12 @@ import { getErrorMessage } from '../../utils/errors';
 import { getFullName } from '../../utils/formatters';
 import { isAdminRole } from '../../utils/roles';
 
+const getReviewOwnerId = (review) => review?.ownerId || review?.owner?.id || review?.reviewOwner?.id;
+const getReviewRequestId = (review) => review?.requestId || review?.request?.id || review?.requestEntity?.id;
+
 const ReviewsPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [reviews, setReviews] = useState([]);
   const [selectedReview, setSelectedReview] = useState(null);
   const [search, setSearch] = useState('');
@@ -48,11 +55,31 @@ const ReviewsPage = () => {
     }
 
     return reviews.filter((review) =>
-      [review.title, review.description, review.owner?.name, String(review.request?.id)].some((value) =>
+      [review.title, review.description, review.owner?.name, String(getReviewRequestId(review) || '')].some((value) =>
         value?.toLowerCase().includes(query),
       ),
     );
   }, [reviews, search]);
+
+  const hydrateReviewDetails = async (review) => {
+    const ownerId = getReviewOwnerId(review);
+    const requestId = getReviewRequestId(review);
+
+    const [owner, request] = await Promise.all([
+      ownerId && !review.owner && !review.reviewOwner
+        ? userApi.findUserById(ownerId).catch(() => null)
+        : Promise.resolve(null),
+      requestId && !review.request && !review.requestEntity
+        ? requestApi.getRequestById(requestId).catch(() => null)
+        : Promise.resolve(null),
+    ]);
+
+    return {
+      ...review,
+      ...(owner ? { owner } : {}),
+      ...(request ? { request } : {}),
+    };
+  };
 
   const openReviewPanel = async (review) => {
     setSelectedReview(review);
@@ -67,7 +94,7 @@ const ReviewsPage = () => {
         return;
       }
 
-      setSelectedReview(data);
+      setSelectedReview(await hydrateReviewDetails({ ...review, ...data }));
     } catch (reviewsError) {
       setDetailsError(getErrorMessage(reviewsError, 'Не удалось загрузить отзыв.'));
     } finally {
@@ -84,6 +111,24 @@ const ReviewsPage = () => {
   const isReviewPanelOpen = isDetailsLoading || detailsError || selectedReview;
   const reviewOwner = selectedReview?.owner || selectedReview?.reviewOwner;
   const reviewRequest = selectedReview?.request || selectedReview?.requestEntity;
+  const reviewOwnerId = getReviewOwnerId(selectedReview) || reviewOwner?.id;
+  const reviewRequestId = getReviewRequestId(selectedReview) || reviewRequest?.id;
+  const openOwnerDetails = () => {
+    if (reviewOwnerId) {
+      navigate(`/super-admin/users/${reviewOwnerId}`);
+    }
+  };
+  const openRequestDetails = () => {
+    if (reviewRequestId) {
+      navigate(`/requests/${reviewRequestId}`);
+    }
+  };
+  const handleActionKeyDown = (event, action) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      action();
+    }
+  };
 
   return (
     <section className="page-section">
@@ -140,13 +185,27 @@ const ReviewsPage = () => {
             </div>
             <p className="details-card__description">{selectedReview.description}</p>
             <dl className="meta-grid meta-grid--wide">
-              <div>
+              <div
+                className={reviewOwnerId ? 'meta-grid__item--action' : ''}
+                role={reviewOwnerId ? 'button' : undefined}
+                tabIndex={reviewOwnerId ? 0 : undefined}
+                aria-label={reviewOwnerId ? 'Открыть пользователя' : undefined}
+                onClick={openOwnerDetails}
+                onKeyDown={(event) => handleActionKeyDown(event, openOwnerDetails)}
+              >
                 <dt>Автор</dt>
-                <dd>{getFullName(reviewOwner)}</dd>
+                <dd>{isDetailsLoading && !reviewOwner ? 'Загружаем автора...' : getFullName(reviewOwner)}</dd>
               </div>
-              <div>
+              <div
+                className={reviewRequestId ? 'meta-grid__item--action' : ''}
+                role={reviewRequestId ? 'button' : undefined}
+                tabIndex={reviewRequestId ? 0 : undefined}
+                aria-label={reviewRequestId ? 'Открыть заявку' : undefined}
+                onClick={openRequestDetails}
+                onKeyDown={(event) => handleActionKeyDown(event, openRequestDetails)}
+              >
                 <dt>Заявка</dt>
-                <dd>{reviewRequest?.id ? `#${reviewRequest.id}` : 'Не указана'}</dd>
+                <dd>{isDetailsLoading && !reviewRequestId ? 'Загружаем заявку...' : reviewRequestId ? `#${reviewRequestId}` : 'Не указана'}</dd>
               </div>
             </dl>
           </div>

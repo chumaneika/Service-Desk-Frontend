@@ -34,6 +34,6 @@ export const NAVIGATION_BY_ROLE = {
   [ROLES.SUPER_ADMIN]: SUPER_ADMIN_NAVIGATION,
 };
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+export const API_BASE_URL = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 export const MOCK_FALLBACK_ENABLED = import.meta.env.VITE_ENABLE_MOCK_FALLBACK === 'true';
 export const BOOTSTRAP_SUPER_ADMIN_PHONE = import.meta.env.VITE_BOOTSTRAP_SUPER_ADMIN_PHONE || '79640168632';
